@@ -29,19 +29,43 @@ function SurveyorApp() {
   const [view, setView] = useState<View>("map");
   const [sheetOpen, setSheetOpen] = useState(true);
   const [activeParcel, setActiveParcel] = useState("PH-IVA-0922");
+  const [multi, setMulti] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+
+  function handleParcel(id: string) {
+    if (multi) {
+      setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+      setSheetOpen(true);
+    } else {
+      setActiveParcel(id);
+      setSheetOpen(true);
+    }
+  }
+
+  function toggleMulti() {
+    setMulti((m) => {
+      const next = !m;
+      if (!next) setSelected([]);
+      else setSelected([activeParcel]);
+      return next;
+    });
+    setSheetOpen(true);
+  }
 
   return (
     <div className="min-h-screen bg-slate-200 py-6">
-      {/* Phone frame */}
       <div className="mx-auto flex w-full max-w-[400px] flex-col overflow-hidden rounded-[28px] border-4 border-slate-800 bg-background shadow-2xl" style={{ height: "min(820px, calc(100vh - 48px))" }}>
-        <AppHeader />
+        <AppHeader multi={multi} onToggleMulti={toggleMulti} selectedCount={selected.length} />
         {view === "map" && (
           <MapView
             sheetOpen={sheetOpen}
-            onParcelSelect={(id) => { setActiveParcel(id); setSheetOpen(true); }}
+            onParcelSelect={handleParcel}
             activeParcel={activeParcel}
+            selected={selected}
+            multi={multi}
             onCloseSheet={() => setSheetOpen(false)}
             onOpenSheet={() => setSheetOpen(true)}
+            onClearSelection={() => setSelected([])}
           />
         )}
         {view === "jobs" && <JobsView onOpenMap={() => setView("map")} />}
