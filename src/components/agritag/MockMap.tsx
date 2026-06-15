@@ -61,8 +61,8 @@ export function MockMap({
         {area && (
           <path
             d={area}
-            fill="oklch(0.62 0.176 250 / 0.08)"
-            stroke="oklch(0.62 0.176 250)"
+            fill="oklch(0.52 0.13 148 / 0.08)"
+            stroke="oklch(0.52 0.13 148)"
             strokeWidth="1.5"
             strokeDasharray="4 3"
           />
