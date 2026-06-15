@@ -103,7 +103,8 @@ function Index() {
         <div className="mt-12 rounded-lg border border-dashed border-border bg-card/50 p-5">
           <div className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">What's in this mockup</div>
           <ul className="mt-3 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
-            <li className="flex gap-2"><span className="text-primary">·</span> Visual direction locked: Mantine-inspired neutrals + blue accent</li>
+            <li className="flex gap-2"><span className="text-primary">·</span> DA-green design system, clean shadcn surfaces tuned for regional dispatchers</li>
+            <li className="flex gap-2"><span className="text-primary">·</span> Surveyor multi-select: tag one farmer to many parcels in one batch</li>
             <li className="flex gap-2"><span className="text-primary">·</span> Dispatcher list/map split with overdue badges and due dates</li>
             <li className="flex gap-2"><span className="text-primary">·</span> Admin dynamic-field builder with live preview</li>
             <li className="flex gap-2"><span className="text-primary">·</span> Surveyor map view + bottom-sheet tagging form</li>

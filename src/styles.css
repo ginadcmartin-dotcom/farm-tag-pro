@@ -62,39 +62,40 @@
 }
 
 :root {
+  /* Department of Agriculture green primary, balanced with warm gold accent and neutral stone surfaces. */
   --radius: 0.5rem;
-  --background: oklch(0.985 0.002 247);
-  --foreground: oklch(0.22 0.018 264);
+  --background: oklch(0.985 0.004 130);
+  --foreground: oklch(0.22 0.02 150);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.018 264);
+  --card-foreground: oklch(0.22 0.02 150);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.018 264);
-  --primary: oklch(0.62 0.176 250);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.965 0.005 247);
-  --secondary-foreground: oklch(0.32 0.02 264);
-  --muted: oklch(0.965 0.005 247);
-  --muted-foreground: oklch(0.58 0.018 257);
-  --accent: oklch(0.95 0.02 250);
-  --accent-foreground: oklch(0.32 0.02 264);
-  --destructive: oklch(0.6 0.21 27);
+  --popover-foreground: oklch(0.22 0.02 150);
+  --primary: oklch(0.52 0.13 148);
+  --primary-foreground: oklch(0.99 0.005 130);
+  --secondary: oklch(0.965 0.008 130);
+  --secondary-foreground: oklch(0.30 0.02 150);
+  --muted: oklch(0.965 0.008 130);
+  --muted-foreground: oklch(0.55 0.015 150);
+  --accent: oklch(0.94 0.04 145);
+  --accent-foreground: oklch(0.30 0.05 150);
+  --destructive: oklch(0.58 0.21 27);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.91 0.008 255);
-  --input: oklch(0.93 0.008 255);
-  --ring: oklch(0.62 0.176 250);
-  --chart-1: oklch(0.62 0.176 250);
-  --chart-2: oklch(0.7 0.17 162);
-  --chart-3: oklch(0.78 0.16 80);
-  --chart-4: oklch(0.65 0.22 28);
-  --chart-5: oklch(0.55 0.2 300);
-  --sidebar: oklch(0.99 0.002 247);
-  --sidebar-foreground: oklch(0.22 0.018 264);
-  --sidebar-primary: oklch(0.62 0.176 250);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.95 0.02 250);
-  --sidebar-accent-foreground: oklch(0.32 0.02 264);
-  --sidebar-border: oklch(0.91 0.008 255);
-  --sidebar-ring: oklch(0.62 0.176 250);
+  --border: oklch(0.91 0.01 140);
+  --input: oklch(0.93 0.01 140);
+  --ring: oklch(0.52 0.13 148);
+  --chart-1: oklch(0.52 0.13 148);
+  --chart-2: oklch(0.75 0.14 85);
+  --chart-3: oklch(0.62 0.10 220);
+  --chart-4: oklch(0.65 0.18 45);
+  --chart-5: oklch(0.45 0.05 150);
+  --sidebar: oklch(0.99 0.004 130);
+  --sidebar-foreground: oklch(0.22 0.02 150);
+  --sidebar-primary: oklch(0.52 0.13 148);
+  --sidebar-primary-foreground: oklch(0.99 0.005 130);
+  --sidebar-accent: oklch(0.94 0.04 145);
+  --sidebar-accent-foreground: oklch(0.30 0.05 150);
+  --sidebar-border: oklch(0.91 0.01 140);
+  --sidebar-ring: oklch(0.52 0.13 148);
 }
 
 .dark {

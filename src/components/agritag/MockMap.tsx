@@ -17,14 +17,17 @@ export function MockMap({
   area,
   className,
   highlightId,
+  selectedIds,
   onParcelClick,
 }: {
   parcels: Parcel[];
   area?: string;
   className?: string;
   highlightId?: string;
+  selectedIds?: string[];
   onParcelClick?: (id: string) => void;
 }) {
+  const selected = new Set(selectedIds ?? []);
   return (
     <div className={cn("relative overflow-hidden bg-[#e8ecef]", className)}>
       {/* faux satellite tiles */}
@@ -48,7 +51,6 @@ export function MockMap({
           </pattern>
         </defs>
         <rect width="400" height="400" fill="url(#grid)" />
-        {/* faux roads */}
         <path d="M0 280 Q 200 240 400 300" stroke="#8a9590" strokeWidth="3" fill="none" opacity="0.6" />
         <path d="M120 0 L 140 400" stroke="#8a9590" strokeWidth="2" fill="none" opacity="0.5" />
       </svg>
@@ -61,26 +63,31 @@ export function MockMap({
         {area && (
           <path
             d={area}
-            fill="oklch(0.62 0.176 250 / 0.08)"
-            stroke="oklch(0.62 0.176 250)"
+            fill="oklch(0.52 0.13 148 / 0.08)"
+            stroke="oklch(0.52 0.13 148)"
             strokeWidth="1.5"
             strokeDasharray="4 3"
           />
         )}
-        {parcels.map((p) => (
-          <path
-            key={p.id}
-            d={p.d}
-            strokeWidth={highlightId === p.id ? 2 : 1}
-            className={cn(
-              STATUS_FILL[p.status],
-              "transition-all",
-              onParcelClick && "cursor-pointer hover:brightness-95",
-              highlightId === p.id && "stroke-primary fill-primary/30",
-            )}
-            onClick={() => onParcelClick?.(p.id)}
-          />
-        ))}
+        {parcels.map((p) => {
+          const isSel = selected.has(p.id);
+          const isHi = highlightId === p.id;
+          return (
+            <path
+              key={p.id}
+              d={p.d}
+              strokeWidth={isSel ? 2.5 : isHi ? 2 : 1}
+              className={cn(
+                STATUS_FILL[p.status],
+                "transition-all",
+                onParcelClick && "cursor-pointer hover:brightness-95",
+                isHi && !isSel && "stroke-primary fill-primary/30",
+                isSel && "stroke-primary fill-primary/40",
+              )}
+              onClick={() => onParcelClick?.(p.id)}
+            />
+          );
+        })}
       </svg>
     </div>
   );
