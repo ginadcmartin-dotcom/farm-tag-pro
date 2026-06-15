@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   ArrowLeft, Search, Plus, Minus, Navigation, Camera,
   Clock, AlertTriangle, Map as MapIcon, User, ChevronRight, X,
+  CheckSquare, Layers,
 } from "lucide-react";
 import { MockMap, SAMPLE_PARCELS, SAMPLE_AREA } from "@/components/agritag/MockMap";
 
