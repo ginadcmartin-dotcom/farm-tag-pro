@@ -582,6 +582,8 @@ function ApplyToggle({ label, all, onChange }: { label: string; all: boolean; on
 }
 
 function TaggingSheet({ parcelId, onClose }: { parcelId: string; onClose: () => void }) {
+  const [flagOpen, setFlagOpen] = useState(false);
+  const [flags, setFlags] = useState<string[]>([]);
   return (
     <div className="absolute inset-x-0 bottom-0 flex max-h-[80%] flex-col rounded-t-[28px] border-t border-border bg-card shadow-2xl">
       <SheetHandle onClose={onClose} />
@@ -591,11 +593,34 @@ function TaggingSheet({ parcelId, onClose }: { parcelId: string; onClose: () => 
             <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{parcelId}</div>
             <h2 className="mt-0.5 text-base font-semibold tracking-tight">Tag farmer details</h2>
           </div>
-          <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-amber-700">Partial</span>
+          <div className="flex items-center gap-1.5">
+            {flags.length > 0 && (
+              <span className="rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-rose-700">
+                {flags.length} flag{flags.length === 1 ? "" : "s"}
+              </span>
+            )}
+            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-amber-700">Partial</span>
+          </div>
         </div>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto px-5 pb-4">
+        {flags.length > 0 && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50/70 px-3 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-rose-800">
+                <AlertTriangle className="size-3.5" /> Flagged exceptions
+              </div>
+              <button onClick={() => setFlagOpen(true)} className="font-mono text-[10px] uppercase tracking-wider text-rose-700 hover:underline">Edit</button>
+            </div>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {flags.map(f => (
+                <span key={f} className="rounded-full border border-rose-200 bg-card px-2 py-0.5 text-[10px] text-rose-800">{f}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
         <Field label="Farmer (RSBSA ID or name)">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -661,12 +686,142 @@ function TaggingSheet({ parcelId, onClose }: { parcelId: string; onClose: () => 
           </div>
         </Field>
 
+        <button
+          onClick={() => setFlagOpen(true)}
+          className="flex w-full items-center justify-between rounded-2xl border border-dashed border-rose-300 bg-rose-50/40 px-3 py-2.5 text-left hover:bg-rose-50"
+        >
+          <div className="flex items-center gap-2">
+            <div className="grid size-8 place-items-center rounded-xl bg-rose-100 text-rose-700">
+              <AlertTriangle className="size-4" />
+            </div>
+            <div>
+              <div className="text-[12px] font-semibold text-rose-900">Flag an exception</div>
+              <div className="text-[10px] text-rose-700/80">Can't complete? Mark issue for the validator.</div>
+            </div>
+          </div>
+          <ChevronRight className="size-4 text-rose-600" />
+        </button>
+
         <div className="rounded-2xl border border-border bg-secondary/60 px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
           <span className="text-foreground">GPS auto-captured</span> · 15.0314°N · 120.6820°E
         </div>
       </div>
 
       <SheetActions primaryLabel="Save tag" />
+
+      {flagOpen && (
+        <ExceptionPicker
+          initial={flags}
+          parcelId={parcelId}
+          onClose={() => setFlagOpen(false)}
+          onSave={(v) => { setFlags(v); setFlagOpen(false); }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ============================ Exception picker ============================ */
+
+const EXCEPTION_REASONS = [
+  { id: "no-farmer", label: "Farmer not found on site", desc: "Owner/operator unreachable after visit" },
+  { id: "boundary", label: "Boundary mismatch", desc: "Polygon doesn't match actual parcel" },
+  { id: "not-agri", label: "Not agricultural land", desc: "Built-up, idle, or converted" },
+  { id: "rsbsa-missing", label: "No RSBSA record", desc: "Farmer claims unregistered" },
+  { id: "duplicate", label: "Duplicate / overlap", desc: "Already tagged or overlaps neighbor" },
+  { id: "access", label: "Inaccessible", desc: "Flooded, blocked, or off-limits" },
+  { id: "dispute", label: "Ownership dispute", desc: "Multiple claimants present" },
+  { id: "other", label: "Other", desc: "Describe in notes" },
+];
+
+function ExceptionPicker({
+  initial, parcelId, onClose, onSave,
+}: { initial: string[]; parcelId: string; onClose: () => void; onSave: (v: string[]) => void }) {
+  const [sel, setSel] = useState<string[]>(initial);
+  const [severity, setSeverity] = useState<"info" | "blocker">("blocker");
+  function toggle(id: string) {
+    setSel((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  }
+  return (
+    <div className="absolute inset-0 z-40 flex items-end bg-black/40 backdrop-blur-sm">
+      <div className="flex max-h-[90%] w-full flex-col rounded-t-[28px] border-t border-border bg-card shadow-2xl">
+        <SheetHandle onClose={onClose} />
+        <div className="px-5 pb-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{parcelId}</div>
+              <h2 className="mt-0.5 text-base font-semibold tracking-tight text-rose-900">Flag exception</h2>
+            </div>
+            <div className="inline-flex rounded-full border border-border bg-secondary p-0.5 text-[10px]">
+              <button
+                onClick={() => setSeverity("info")}
+                className={`rounded-full px-2.5 py-0.5 font-mono font-semibold uppercase tracking-wider ${severity === "info" ? "bg-card text-amber-700 shadow-sm" : "text-muted-foreground"}`}
+              >
+                Info
+              </button>
+              <button
+                onClick={() => setSeverity("blocker")}
+                className={`rounded-full px-2.5 py-0.5 font-mono font-semibold uppercase tracking-wider ${severity === "blocker" ? "bg-card text-rose-700 shadow-sm" : "text-muted-foreground"}`}
+              >
+                Blocker
+              </button>
+            </div>
+          </div>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Pick all that apply. Exceptions are sent with the job order for the validator to review.
+          </p>
+        </div>
+
+        <div className="flex-1 space-y-1.5 overflow-y-auto px-5 pb-3">
+          {EXCEPTION_REASONS.map((r) => {
+            const active = sel.includes(r.label);
+            return (
+              <button
+                key={r.id}
+                onClick={() => toggle(r.label)}
+                className={`flex w-full items-start gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors ${
+                  active ? "border-rose-300 bg-rose-50" : "border-border bg-background hover:bg-secondary/50"
+                }`}
+              >
+                <div className={`mt-0.5 grid size-4 shrink-0 place-items-center rounded border ${active ? "border-rose-500 bg-rose-500 text-white" : "border-border"}`}>
+                  {active && <CheckSquare className="size-3" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[12.5px] font-medium">{r.label}</div>
+                  <div className="text-[10.5px] text-muted-foreground">{r.desc}</div>
+                </div>
+              </button>
+            );
+          })}
+
+          <Field label="Notes for validator">
+            <textarea
+              placeholder="Add context, name of person spoken to, landmarks…"
+              className="min-h-[64px] w-full resize-none rounded-2xl border border-border bg-background p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+            />
+          </Field>
+
+          <Field label="Evidence photo (optional)">
+            <button className="flex h-16 w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border text-muted-foreground">
+              <Camera className="size-4" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">Attach photo</span>
+            </button>
+          </Field>
+        </div>
+
+        <div className="flex shrink-0 gap-2 border-t border-border bg-card px-5 py-3">
+          <button onClick={onClose} className="h-11 flex-1 rounded-full border border-border bg-secondary text-sm font-medium hover:bg-accent">
+            Cancel
+          </button>
+          <button
+            disabled={sel.length === 0}
+            onClick={() => onSave(sel)}
+            className="h-11 flex-[2] rounded-full bg-rose-600 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 disabled:opacity-50"
+          >
+            Save {sel.length || ""} flag{sel.length === 1 ? "" : "s"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
