@@ -531,3 +531,222 @@ function MapTab() {
     </div>
   );
 }
+
+// ───────── Parcels tab: submitted parcel details ─────────
+type ParcelRow = {
+  id: string;
+  farmer: string;
+  rsbsa: string;
+  tenure: "Owner" | "Tenant" | "Lessee" | "Caretaker";
+  crop: string;
+  ha: number;
+  gps: string;
+  photo: boolean;
+  status: "ok" | "review" | "exception";
+  flag?: string;
+  tagged: string;
+};
+
+function buildParcelRows(job: Job): ParcelRow[] {
+  const tenures: ParcelRow["tenure"][] = ["Owner", "Tenant", "Lessee", "Caretaker"];
+  const crops = ["Rice (Inbred)", "Rice (Hybrid)", "Corn", "Vegetables", "Sugarcane"];
+  const flags = ["GPS outside polygon", "Missing photo", "RSBSA not matched", "Duplicate tag", "Boundary mismatch"];
+  const rows: ParcelRow[] = [];
+  const n = 24;
+  for (let i = 0; i < n; i++) {
+    const isException = i % 7 === 3;
+    const review = !isException && i % 5 === 1;
+    rows.push({
+      id: `P-${9800 + i}-${String.fromCharCode(65 + (i % 4))}`,
+      farmer: ["Juan D. Marcelo", "Maria L. Santos", "Pedro R. Reyes", "Ana B. Cruz", "Roberto Dela Peña", "Jose M. Aquino"][i % 6],
+      rsbsa: `03-14-02-001-${4400 + i * 7}`,
+      tenure: tenures[i % 4],
+      crop: crops[i % crops.length],
+      ha: Math.round((0.4 + (i % 6) * 0.45) * 100) / 100,
+      gps: `15.03${(10 + i).toString().padStart(2, "0")}°N · 120.68${(10 + i * 3).toString().padStart(2, "0")}°E`,
+      photo: !(i % 9 === 4),
+      status: isException ? "exception" : review ? "review" : "ok",
+      flag: isException ? flags[i % flags.length] : undefined,
+      tagged: `Jun ${10 + (i % 6)}, ${8 + (i % 6)}:${10 + (i % 5)}0`,
+    });
+  }
+  return rows.slice(0, Math.min(n, job.tagged));
+}
+
+function ParcelsTab({ job }: { job: Job }) {
+  const all = buildParcelRows(job);
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState<"all" | "ok" | "review" | "exception">("all");
+  const [active, setActive] = useState<ParcelRow | null>(null);
+
+  const filtered = all.filter(r => {
+    if (status !== "all" && r.status !== status) return false;
+    if (!q) return true;
+    const s = q.toLowerCase();
+    return r.id.toLowerCase().includes(s) || r.farmer.toLowerCase().includes(s) || r.rsbsa.includes(s);
+  });
+
+  const counts = {
+    all: all.length,
+    ok: all.filter(r => r.status === "ok").length,
+    review: all.filter(r => r.status === "review").length,
+    exception: all.filter(r => r.status === "exception").length,
+  };
+
+  return (
+    <div>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          Submitted parcels in this job order. Read-only — drill in to inspect a single record.
+        </p>
+        <div className="text-[11px] text-muted-foreground">
+          Showing <span className="font-semibold text-foreground tabular-nums">{filtered.length}</span> of {all.length} (preview of {job.tagged.toLocaleString()})
+        </div>
+      </div>
+
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 rounded-md border border-border bg-secondary/50 p-1">
+          {([
+            ["all", `All ${counts.all}`],
+            ["ok", `Clean ${counts.ok}`],
+            ["review", `Needs review ${counts.review}`],
+            ["exception", `Exceptions ${counts.exception}`],
+          ] as const).map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setStatus(k)}
+              className={`rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                status === k ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Parcel ID, farmer, RSBSA…"
+            className="h-8 w-56 rounded-md border border-border bg-card pl-8 pr-3 text-xs outline-none placeholder:text-muted-foreground focus:border-primary"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-md border border-border">
+        <table className="w-full text-xs">
+          <thead className="border-b border-border bg-secondary/50 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 font-medium">Parcel</th>
+              <th className="px-3 py-2 font-medium">Farmer · RSBSA</th>
+              <th className="px-3 py-2 font-medium">Tenure</th>
+              <th className="px-3 py-2 font-medium">Crop</th>
+              <th className="px-3 py-2 text-right font-medium">ha</th>
+              <th className="px-3 py-2 font-medium">Photo</th>
+              <th className="px-3 py-2 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((r) => (
+              <tr
+                key={r.id}
+                onClick={() => setActive(r)}
+                className="cursor-pointer border-b border-border last:border-0 transition-colors hover:bg-accent/40"
+              >
+                <td className="px-3 py-2 font-mono">{r.id}</td>
+                <td className="px-3 py-2">
+                  <div className="font-medium">{r.farmer}</div>
+                  <div className="font-mono text-[10px] text-muted-foreground">{r.rsbsa}</div>
+                </td>
+                <td className="px-3 py-2">{r.tenure}</td>
+                <td className="px-3 py-2 text-muted-foreground">{r.crop}</td>
+                <td className="px-3 py-2 text-right tabular-nums">{r.ha.toFixed(2)}</td>
+                <td className="px-3 py-2">
+                  {r.photo
+                    ? <CheckCircle2 className="size-3.5 text-emerald-600" />
+                    : <XCircle className="size-3.5 text-rose-600" />}
+                </td>
+                <td className="px-3 py-2">
+                  {r.status === "ok" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800">
+                      <CheckCircle2 className="size-3" /> Clean
+                    </span>
+                  )}
+                  {r.status === "review" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-800">
+                      <Clock className="size-3" /> Review
+                    </span>
+                  )}
+                  {r.status === "exception" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-800">
+                      <AlertTriangle className="size-3" /> {r.flag}
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-3 py-8 text-center text-xs text-muted-foreground">No parcels match your filters.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {active && <ParcelDetailDialog row={active} onClose={() => setActive(null)} />}
+    </div>
+  );
+}
+
+function ParcelDetailDialog({ row, onClose }: { row: ParcelRow; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-foreground/40 p-6 backdrop-blur-sm" onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg overflow-hidden rounded-lg border border-border bg-card shadow-2xl"
+      >
+        <div className="flex items-start justify-between border-b border-border px-5 py-3">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Parcel record</div>
+            <h3 className="text-base font-semibold">{row.id}</h3>
+          </div>
+          <button onClick={onClose} className="grid size-7 place-items-center rounded-md border border-border bg-secondary text-muted-foreground hover:text-foreground">
+            <XCircle className="size-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 px-5 py-4 text-xs">
+          {[
+            ["Farmer", row.farmer],
+            ["RSBSA ID", row.rsbsa],
+            ["Tenure", row.tenure],
+            ["Crop", row.crop],
+            ["Tilled area", `${row.ha.toFixed(2)} ha`],
+            ["GPS", row.gps],
+            ["Tagged at", row.tagged],
+            ["Boundary photo", row.photo ? "Attached" : "Missing"],
+          ].map(([k, v]) => (
+            <div key={k} className="rounded-md border border-border bg-secondary/30 p-2.5">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{k}</div>
+              <div className="mt-0.5 font-medium">{v}</div>
+            </div>
+          ))}
+        </div>
+
+        {row.status === "exception" && (
+          <div className="mx-5 mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
+            <div className="flex items-center gap-1.5 font-semibold"><AlertTriangle className="size-3.5" /> Exception flagged by AEW</div>
+            <div className="mt-0.5 text-rose-800">{row.flag}</div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between border-t border-border bg-secondary/30 px-5 py-3 text-[11px] text-muted-foreground">
+          <span>Read-only · per-parcel edits aren't possible from validator</span>
+          <button onClick={onClose} className="h-8 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90">Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
