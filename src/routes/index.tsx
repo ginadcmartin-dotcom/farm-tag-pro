@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Map, ClipboardList, Settings2, ArrowRight } from "lucide-react";
+import { Map, ClipboardList, Settings2, ArrowRight, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,6 +35,14 @@ const surfaces = [
     title: "Field Tagging",
     desc: "Map of assigned parcels, search farmer by RSBSA ID, tag with tenure status and admin-configured fields.",
     icon: Map,
+  },
+  {
+    to: "/validator",
+    label: "Validator",
+    sub: "Web · Regional Office",
+    title: "Job Order QA",
+    desc: "Review submitted job orders by summary stats and exceptions — approve, return, or sample at job-order level.",
+    icon: ShieldCheck,
   },
 ] as const;
 
@@ -74,7 +82,7 @@ function Index() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
+        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {surfaces.map((s) => (
             <Link
               key={s.to}

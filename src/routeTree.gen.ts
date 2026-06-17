@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ValidatorRouteImport } from './routes/validator'
 import { Route as DispatcherRouteImport } from './routes/dispatcher'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminFieldsRouteImport } from './routes/admin.fields'
 
+const ValidatorRoute = ValidatorRouteImport.update({
+  id: '/validator',
+  path: '/validator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DispatcherRoute = DispatcherRouteImport.update({
   id: '/dispatcher',
   path: '/dispatcher',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/dispatcher': typeof DispatcherRoute
+  '/validator': typeof ValidatorRoute
   '/admin/fields': typeof AdminFieldsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/dispatcher': typeof DispatcherRoute
+  '/validator': typeof ValidatorRoute
   '/admin/fields': typeof AdminFieldsRoute
 }
 export interface FileRoutesById {
@@ -52,25 +60,34 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/dispatcher': typeof DispatcherRoute
+  '/validator': typeof ValidatorRoute
   '/admin/fields': typeof AdminFieldsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/dispatcher' | '/admin/fields'
+  fullPaths: '/' | '/app' | '/dispatcher' | '/validator' | '/admin/fields'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/dispatcher' | '/admin/fields'
-  id: '__root__' | '/' | '/app' | '/dispatcher' | '/admin/fields'
+  to: '/' | '/app' | '/dispatcher' | '/validator' | '/admin/fields'
+  id: '__root__' | '/' | '/app' | '/dispatcher' | '/validator' | '/admin/fields'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
   DispatcherRoute: typeof DispatcherRoute
+  ValidatorRoute: typeof ValidatorRoute
   AdminFieldsRoute: typeof AdminFieldsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/validator': {
+      id: '/validator'
+      path: '/validator'
+      fullPath: '/validator'
+      preLoaderRoute: typeof ValidatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dispatcher': {
       id: '/dispatcher'
       path: '/dispatcher'
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
   DispatcherRoute: DispatcherRoute,
+  ValidatorRoute: ValidatorRoute,
   AdminFieldsRoute: AdminFieldsRoute,
 }
 export const routeTree = rootRouteImport
