@@ -247,7 +247,7 @@ function Kpi({ icon: Icon, label, value, sub, tone }: { icon: any; label: string
 
 // ───────── Drawer: Job Order review ─────────
 function JobReviewDrawer({ job, onClose }: { job: Job; onClose: () => void }) {
-  const [tab, setTab] = useState<"summary" | "exceptions" | "samples" | "map">("summary");
+  const [tab, setTab] = useState<"summary" | "parcels" | "exceptions" | "samples" | "map">("summary");
   const [decision, setDecision] = useState<null | "approve" | "return">(null);
 
   return (
@@ -276,6 +276,7 @@ function JobReviewDrawer({ job, onClose }: { job: Job; onClose: () => void }) {
           <div className="mt-4 flex items-center gap-1 rounded-lg border border-border bg-secondary/50 p-1">
             {([
               ["summary", "Summary"],
+              ["parcels", `Parcels (${job.tagged})`],
               ["exceptions", `Exceptions (${job.exceptions})`],
               ["samples", "Random samples"],
               ["map", "Map heatmap"],
@@ -296,6 +297,7 @@ function JobReviewDrawer({ job, onClose }: { job: Job; onClose: () => void }) {
         {/* Drawer body */}
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {tab === "summary" && <SummaryTab job={job} />}
+          {tab === "parcels" && <ParcelsTab job={job} />}
           {tab === "exceptions" && <ExceptionsTab job={job} />}
           {tab === "samples" && <SamplesTab />}
           {tab === "map" && <MapTab />}
