@@ -60,9 +60,10 @@ function Index() {
               <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">v0.1 · mockup</div>
             </div>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1.5">
-            <div className="size-1.5 animate-pulse rounded-full bg-emerald-500" />
-            <span className="text-xs font-medium text-muted-foreground">Department of Agriculture</span>
+          <div className="flex items-center gap-2">
+            <Link to="/login" className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-accent">Web sign-in</Link>
+            <Link to="/surveyor-login" className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-accent">Surveyor sign-in</Link>
+            <Link to="/admin/users" className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90">Admin</Link>
           </div>
         </div>
       </header>

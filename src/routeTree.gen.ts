@@ -10,14 +10,28 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ValidatorRouteImport } from './routes/validator'
+import { Route as SurveyorLoginRouteImport } from './routes/surveyor-login'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as DispatcherRouteImport } from './routes/dispatcher'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminFieldsRouteImport } from './routes/admin.fields'
+import { Route as AdminDevicesRouteImport } from './routes/admin.devices'
 
 const ValidatorRoute = ValidatorRouteImport.update({
   id: '/validator',
   path: '/validator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SurveyorLoginRoute = SurveyorLoginRouteImport.update({
+  id: '/surveyor-login',
+  path: '/surveyor-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DispatcherRoute = DispatcherRouteImport.update({
@@ -35,9 +49,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminFieldsRoute = AdminFieldsRouteImport.update({
   id: '/admin/fields',
   path: '/admin/fields',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDevicesRoute = AdminDevicesRouteImport.update({
+  id: '/admin/devices',
+  path: '/admin/devices',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -45,38 +69,82 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/dispatcher': typeof DispatcherRoute
+  '/login': typeof LoginRoute
+  '/surveyor-login': typeof SurveyorLoginRoute
   '/validator': typeof ValidatorRoute
+  '/admin/devices': typeof AdminDevicesRoute
   '/admin/fields': typeof AdminFieldsRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/dispatcher': typeof DispatcherRoute
+  '/login': typeof LoginRoute
+  '/surveyor-login': typeof SurveyorLoginRoute
   '/validator': typeof ValidatorRoute
+  '/admin/devices': typeof AdminDevicesRoute
   '/admin/fields': typeof AdminFieldsRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/dispatcher': typeof DispatcherRoute
+  '/login': typeof LoginRoute
+  '/surveyor-login': typeof SurveyorLoginRoute
   '/validator': typeof ValidatorRoute
+  '/admin/devices': typeof AdminDevicesRoute
   '/admin/fields': typeof AdminFieldsRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/dispatcher' | '/validator' | '/admin/fields'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/dispatcher'
+    | '/login'
+    | '/surveyor-login'
+    | '/validator'
+    | '/admin/devices'
+    | '/admin/fields'
+    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/dispatcher' | '/validator' | '/admin/fields'
-  id: '__root__' | '/' | '/app' | '/dispatcher' | '/validator' | '/admin/fields'
+  to:
+    | '/'
+    | '/app'
+    | '/dispatcher'
+    | '/login'
+    | '/surveyor-login'
+    | '/validator'
+    | '/admin/devices'
+    | '/admin/fields'
+    | '/admin/users'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/dispatcher'
+    | '/login'
+    | '/surveyor-login'
+    | '/validator'
+    | '/admin/devices'
+    | '/admin/fields'
+    | '/admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
   DispatcherRoute: typeof DispatcherRoute
+  LoginRoute: typeof LoginRoute
+  SurveyorLoginRoute: typeof SurveyorLoginRoute
   ValidatorRoute: typeof ValidatorRoute
+  AdminDevicesRoute: typeof AdminDevicesRoute
   AdminFieldsRoute: typeof AdminFieldsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -86,6 +154,20 @@ declare module '@tanstack/react-router' {
       path: '/validator'
       fullPath: '/validator'
       preLoaderRoute: typeof ValidatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/surveyor-login': {
+      id: '/surveyor-login'
+      path: '/surveyor-login'
+      fullPath: '/surveyor-login'
+      preLoaderRoute: typeof SurveyorLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dispatcher': {
@@ -109,11 +191,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/fields': {
       id: '/admin/fields'
       path: '/admin/fields'
       fullPath: '/admin/fields'
       preLoaderRoute: typeof AdminFieldsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/devices': {
+      id: '/admin/devices'
+      path: '/admin/devices'
+      fullPath: '/admin/devices'
+      preLoaderRoute: typeof AdminDevicesRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -123,19 +219,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
   DispatcherRoute: DispatcherRoute,
+  LoginRoute: LoginRoute,
+  SurveyorLoginRoute: SurveyorLoginRoute,
   ValidatorRoute: ValidatorRoute,
+  AdminDevicesRoute: AdminDevicesRoute,
   AdminFieldsRoute: AdminFieldsRoute,
+  AdminUsersRoute: AdminUsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
