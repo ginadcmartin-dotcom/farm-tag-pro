@@ -113,20 +113,21 @@ function TopBar() {
   );
 }
 
-function SideRail() {
-  const items = [
-    { label: "Jobs", icon: "□", active: true },
-    { label: "Parcels", icon: "▦" },
-    { label: "Farmers", icon: "◯" },
-    { label: "Reports", icon: "▤" },
+function SideRail({ view, onChange }: { view: View; onChange: (v: View) => void }) {
+  const items: { label: string; icon: string; key: View }[] = [
+    { label: "Jobs", icon: "□", key: "jobs" },
+    { label: "Parcels", icon: "▦", key: "parcels" },
+    { label: "Farmers", icon: "◯", key: "farmers" },
+    { label: "Reports", icon: "▤", key: "reports" },
   ];
   return (
     <nav className="hidden w-14 flex-col items-center gap-1 border-r border-border bg-card py-3 md:flex">
       {items.map((it) => (
         <button
           key={it.label}
+          onClick={() => onChange(it.key)}
           className={`flex h-12 w-12 flex-col items-center justify-center gap-0.5 rounded-md text-[10px] font-medium uppercase tracking-wider ${
-            it.active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary"
+            view === it.key ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary"
           }`}
         >
           <span className="text-base leading-none">{it.icon}</span>
