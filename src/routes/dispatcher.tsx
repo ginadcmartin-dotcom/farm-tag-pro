@@ -43,30 +43,41 @@ const STATUS_BADGE: Record<Job["status"], { label: string; cls: string; icon: ty
   completed: { label: "Completed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
 };
 
+type View = "jobs" | "parcels" | "farmers" | "reports";
+
 function DispatcherPage() {
   const [selected, setSelected] = useState<Job>(JOBS[0]);
   const [showCreate, setShowCreate] = useState(false);
+  const [view, setView] = useState<View>("jobs");
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
-        <SideRail />
-        <div className="flex flex-1 overflow-hidden">
-          <main className="flex w-full flex-col lg:w-[58%] lg:border-r lg:border-border">
-            <Toolbar onCreate={() => setShowCreate(true)} />
-            <div className="flex-1 overflow-auto">
-              <JobsTable selected={selected} onSelect={setSelected} />
-            </div>
-          </main>
-          <aside className="hidden lg:flex lg:w-[42%] flex-col">
-            {showCreate ? (
-              <CreateJobPanel onClose={() => setShowCreate(false)} />
-            ) : (
-              <JobDetailPanel job={selected} />
-            )}
-          </aside>
-        </div>
+        <SideRail view={view} onChange={setView} />
+        {view === "jobs" ? (
+          <div className="flex flex-1 overflow-hidden">
+            <main className="flex w-full flex-col lg:w-[58%] lg:border-r lg:border-border">
+              <Toolbar onCreate={() => setShowCreate(true)} />
+              <div className="flex-1 overflow-auto">
+                <JobsTable selected={selected} onSelect={setSelected} />
+              </div>
+            </main>
+            <aside className="hidden lg:flex lg:w-[42%] flex-col">
+              {showCreate ? (
+                <CreateJobPanel onClose={() => setShowCreate(false)} />
+              ) : (
+                <JobDetailPanel job={selected} />
+              )}
+            </aside>
+          </div>
+        ) : view === "parcels" ? (
+          <ParcelsView />
+        ) : view === "farmers" ? (
+          <FarmersView />
+        ) : (
+          <ReportsView />
+        )}
       </div>
     </div>
   );
