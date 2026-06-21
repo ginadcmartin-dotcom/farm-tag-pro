@@ -21,11 +21,11 @@ const surfaces = [
     icon: ClipboardList,
   },
   {
-    to: "/admin/fields",
+    to: "/admin",
     label: "Admin",
-    sub: "Web · Field Configuration",
-    title: "Dynamic Field Builder",
-    desc: "Define the custom fields surveyors fill out per tag — text, select, photo, GPS. Live preview of the resulting form.",
+    sub: "Web · Console",
+    title: "Admin Console",
+    desc: "One hub for user management, device registry, and the grouped dynamic field configuration that drives the mobile app.",
     icon: Settings2,
   },
   {
@@ -63,7 +63,7 @@ function Index() {
           <div className="flex items-center gap-2">
             <Link to="/login" className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-accent">Web sign-in</Link>
             <Link to="/surveyor-login" className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-accent">Surveyor sign-in</Link>
-            <Link to="/admin/users" className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90">Admin</Link>
+            <Link to="/admin" className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90">Admin</Link>
           </div>
         </div>
       </header>
