@@ -43,30 +43,41 @@ const STATUS_BADGE: Record<Job["status"], { label: string; cls: string; icon: ty
   completed: { label: "Completed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
 };
 
+type View = "jobs" | "parcels" | "farmers" | "reports";
+
 function DispatcherPage() {
   const [selected, setSelected] = useState<Job>(JOBS[0]);
   const [showCreate, setShowCreate] = useState(false);
+  const [view, setView] = useState<View>("jobs");
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
-        <SideRail />
-        <div className="flex flex-1 overflow-hidden">
-          <main className="flex w-full flex-col lg:w-[58%] lg:border-r lg:border-border">
-            <Toolbar onCreate={() => setShowCreate(true)} />
-            <div className="flex-1 overflow-auto">
-              <JobsTable selected={selected} onSelect={setSelected} />
-            </div>
-          </main>
-          <aside className="hidden lg:flex lg:w-[42%] flex-col">
-            {showCreate ? (
-              <CreateJobPanel onClose={() => setShowCreate(false)} />
-            ) : (
-              <JobDetailPanel job={selected} />
-            )}
-          </aside>
-        </div>
+        <SideRail view={view} onChange={setView} />
+        {view === "jobs" ? (
+          <div className="flex flex-1 overflow-hidden">
+            <main className="flex w-full flex-col lg:w-[58%] lg:border-r lg:border-border">
+              <Toolbar onCreate={() => setShowCreate(true)} />
+              <div className="flex-1 overflow-auto">
+                <JobsTable selected={selected} onSelect={setSelected} />
+              </div>
+            </main>
+            <aside className="hidden lg:flex lg:w-[42%] flex-col">
+              {showCreate ? (
+                <CreateJobPanel onClose={() => setShowCreate(false)} />
+              ) : (
+                <JobDetailPanel job={selected} />
+              )}
+            </aside>
+          </div>
+        ) : view === "parcels" ? (
+          <ParcelsView />
+        ) : view === "farmers" ? (
+          <FarmersView />
+        ) : (
+          <ReportsView />
+        )}
       </div>
     </div>
   );
@@ -102,20 +113,21 @@ function TopBar() {
   );
 }
 
-function SideRail() {
-  const items = [
-    { label: "Jobs", icon: "□", active: true },
-    { label: "Parcels", icon: "▦" },
-    { label: "Farmers", icon: "◯" },
-    { label: "Reports", icon: "▤" },
+function SideRail({ view, onChange }: { view: View; onChange: (v: View) => void }) {
+  const items: { label: string; icon: string; key: View }[] = [
+    { label: "Jobs", icon: "□", key: "jobs" },
+    { label: "Parcels", icon: "▦", key: "parcels" },
+    { label: "Farmers", icon: "◯", key: "farmers" },
+    { label: "Reports", icon: "▤", key: "reports" },
   ];
   return (
     <nav className="hidden w-14 flex-col items-center gap-1 border-r border-border bg-card py-3 md:flex">
       {items.map((it) => (
         <button
           key={it.label}
+          onClick={() => onChange(it.key)}
           className={`flex h-12 w-12 flex-col items-center justify-center gap-0.5 rounded-md text-[10px] font-medium uppercase tracking-wider ${
-            it.active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary"
+            view === it.key ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary"
           }`}
         >
           <span className="text-base leading-none">{it.icon}</span>
@@ -387,5 +399,311 @@ function CreateJobPanel({ onClose }: { onClose: () => void }) {
         </button>
       </div>
     </div>
+  );
+}
+
+// ============================================================
+// Parcels view
+// ============================================================
+type Parcel = {
+  code: string;
+  barangay: string;
+  area: number;
+  crop: string;
+  tenure: string;
+  owner: string;
+  job: string;
+  status: "tagged" | "untagged" | "exception";
+};
+
+const PARCELS: Parcel[] = [
+  { code: "PH-IVA-0921", barangay: "San Isidro", area: 1.24, crop: "Rice (Irrigated)", tenure: "Owner", owner: "Pedro Reyes", job: "JOB-2026-081", status: "tagged" },
+  { code: "PH-IVA-0922", barangay: "San Isidro", area: 0.86, crop: "Rice (Irrigated)", tenure: "Tenant", owner: "Marites Lim", job: "JOB-2026-081", status: "tagged" },
+  { code: "PH-IVA-0923", barangay: "San Isidro", area: 2.10, crop: "Rice (Irrigated)", tenure: "Owner", owner: "Juan Bautista", job: "JOB-2026-081", status: "exception" },
+  { code: "PH-IVA-0924", barangay: "Sta. Rosa", area: 0.45, crop: "Corn", tenure: "Lessee", owner: "Elena Cruz", job: "JOB-2026-081", status: "untagged" },
+  { code: "PH-PMP-1102", barangay: "Magalang", area: 3.20, crop: "Sugarcane", tenure: "Owner", owner: "Roberto Yap", job: "JOB-2026-082", status: "tagged" },
+  { code: "PH-PMP-1103", barangay: "Magalang", area: 1.05, crop: "Rice (Rainfed)", tenure: "Tenant", owner: "Carla Santos", job: "JOB-2026-082", status: "exception" },
+  { code: "PH-BUL-0411", barangay: "Plaridel", area: 0.92, crop: "Vegetables", tenure: "Owner", owner: "Antonio Diaz", job: "JOB-2026-083", status: "untagged" },
+  { code: "PH-TRL-0773", barangay: "Concepcion", area: 1.75, crop: "Rice (Irrigated)", tenure: "Owner", owner: "Lourdes Reyes", job: "JOB-2026-084", status: "tagged" },
+  { code: "PH-ZAM-0210", barangay: "Iba", area: 0.68, crop: "Mango", tenure: "Owner", owner: "Felix Mendoza", job: "JOB-2026-085", status: "tagged" },
+];
+
+const PARCEL_BADGE: Record<Parcel["status"], string> = {
+  tagged: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  untagged: "bg-slate-100 text-slate-600 border-slate-200",
+  exception: "bg-amber-50 text-amber-700 border-amber-200",
+};
+
+function ParcelsView() {
+  const tagged = PARCELS.filter(p => p.status === "tagged").length;
+  const exceptions = PARCELS.filter(p => p.status === "exception").length;
+  const totalArea = PARCELS.reduce((s, p) => s + p.area, 0).toFixed(2);
+  return (
+    <main className="flex flex-1 flex-col overflow-hidden">
+      <div className="border-b border-border bg-card px-5 py-4">
+        <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">DA Parcel Registry</div>
+        <h1 className="mt-1 text-lg font-semibold tracking-tight">Parcels</h1>
+        <p className="text-xs text-muted-foreground">Geo-referenced parcels scoped across active job orders.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-px border-b border-border bg-border md:grid-cols-4">
+        <Stat label="Total Parcels" value={String(PARCELS.length)} />
+        <Stat label="Tagged" value={`${tagged} (${Math.round(tagged/PARCELS.length*100)}%)`} />
+        <Stat label="Exceptions" value={String(exceptions)} />
+        <Stat label="Total Area (ha)" value={totalArea} />
+      </div>
+      <div className="flex-1 overflow-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="sticky top-0 z-10 bg-secondary/60 backdrop-blur">
+            <tr className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-2.5">Parcel Code</th>
+              <th className="px-4 py-2.5">Barangay</th>
+              <th className="px-4 py-2.5 hidden md:table-cell">Crop</th>
+              <th className="px-4 py-2.5 hidden lg:table-cell">Tenure</th>
+              <th className="px-4 py-2.5 hidden lg:table-cell">Owner</th>
+              <th className="px-4 py-2.5">Area (ha)</th>
+              <th className="px-4 py-2.5 hidden md:table-cell">Job</th>
+              <th className="px-4 py-2.5">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {PARCELS.map((p) => (
+              <tr key={p.code} className="border-b border-border/60 hover:bg-secondary/40">
+                <td className="px-4 py-3 font-mono text-xs">{p.code}</td>
+                <td className="px-4 py-3 text-xs">{p.barangay}</td>
+                <td className="px-4 py-3 text-xs hidden md:table-cell">{p.crop}</td>
+                <td className="px-4 py-3 text-xs hidden lg:table-cell">{p.tenure}</td>
+                <td className="px-4 py-3 text-xs hidden lg:table-cell">{p.owner}</td>
+                <td className="px-4 py-3 font-mono text-xs">{p.area.toFixed(2)}</td>
+                <td className="px-4 py-3 font-mono text-[10px] hidden md:table-cell text-muted-foreground">{p.job}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${PARCEL_BADGE[p.status]}`}>
+                    {p.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  );
+}
+
+// ============================================================
+// Farmers view
+// ============================================================
+type Farmer = {
+  rsbsa: string;
+  name: string;
+  sex: "M" | "F";
+  barangay: string;
+  parcels: number;
+  totalArea: number;
+  primaryCrop: string;
+  status: "verified" | "pending" | "exception";
+};
+
+const FARMERS: Farmer[] = [
+  { rsbsa: "03-14-02-001-4419", name: "Marites Lim",     sex: "F", barangay: "San Isidro", parcels: 1, totalArea: 0.86, primaryCrop: "Rice", status: "verified" },
+  { rsbsa: "03-14-02-001-4420", name: "Pedro Reyes",     sex: "M", barangay: "San Isidro", parcels: 2, totalArea: 2.31, primaryCrop: "Rice", status: "verified" },
+  { rsbsa: "03-14-02-001-4421", name: "Juan Bautista",   sex: "M", barangay: "San Isidro", parcels: 1, totalArea: 2.10, primaryCrop: "Rice", status: "exception" },
+  { rsbsa: "03-14-02-002-1187", name: "Elena Cruz",      sex: "F", barangay: "Sta. Rosa",  parcels: 1, totalArea: 0.45, primaryCrop: "Corn", status: "pending" },
+  { rsbsa: "03-35-09-004-0921", name: "Roberto Yap",     sex: "M", barangay: "Magalang",   parcels: 3, totalArea: 6.10, primaryCrop: "Sugarcane", status: "verified" },
+  { rsbsa: "03-35-09-004-0922", name: "Carla Santos",    sex: "F", barangay: "Magalang",   parcels: 1, totalArea: 1.05, primaryCrop: "Rice", status: "exception" },
+  { rsbsa: "03-08-02-007-3310", name: "Antonio Diaz",    sex: "M", barangay: "Plaridel",   parcels: 1, totalArea: 0.92, primaryCrop: "Vegetables", status: "pending" },
+  { rsbsa: "03-69-07-003-2210", name: "Lourdes Reyes",   sex: "F", barangay: "Concepcion", parcels: 2, totalArea: 3.40, primaryCrop: "Rice", status: "verified" },
+  { rsbsa: "03-71-01-001-0044", name: "Felix Mendoza",   sex: "M", barangay: "Iba",        parcels: 1, totalArea: 0.68, primaryCrop: "Mango", status: "verified" },
+];
+
+const FARMER_BADGE: Record<Farmer["status"], string> = {
+  verified: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  pending: "bg-slate-100 text-slate-600 border-slate-200",
+  exception: "bg-amber-50 text-amber-700 border-amber-200",
+};
+
+function FarmersView() {
+  const verified = FARMERS.filter(f => f.status === "verified").length;
+  const female = FARMERS.filter(f => f.sex === "F").length;
+  const totalArea = FARMERS.reduce((s, f) => s + f.totalArea, 0).toFixed(2);
+  return (
+    <main className="flex flex-1 flex-col overflow-hidden">
+      <div className="border-b border-border bg-card px-5 py-4">
+        <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">RSBSA Registry</div>
+        <h1 className="mt-1 text-lg font-semibold tracking-tight">Farmers</h1>
+        <p className="text-xs text-muted-foreground">Registered beneficiaries linked to tagged parcels.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-px border-b border-border bg-border md:grid-cols-4">
+        <Stat label="Total Farmers" value={String(FARMERS.length)} />
+        <Stat label="Verified" value={`${verified} (${Math.round(verified/FARMERS.length*100)}%)`} />
+        <Stat label="Female" value={`${female} / ${FARMERS.length}`} />
+        <Stat label="Tilled (ha)" value={totalArea} />
+      </div>
+      <div className="flex-1 overflow-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="sticky top-0 z-10 bg-secondary/60 backdrop-blur">
+            <tr className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-2.5">RSBSA No.</th>
+              <th className="px-4 py-2.5">Name</th>
+              <th className="px-4 py-2.5">Sex</th>
+              <th className="px-4 py-2.5 hidden md:table-cell">Barangay</th>
+              <th className="px-4 py-2.5">Parcels</th>
+              <th className="px-4 py-2.5 hidden lg:table-cell">Area (ha)</th>
+              <th className="px-4 py-2.5 hidden lg:table-cell">Primary Crop</th>
+              <th className="px-4 py-2.5">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {FARMERS.map((f) => (
+              <tr key={f.rsbsa} className="border-b border-border/60 hover:bg-secondary/40">
+                <td className="px-4 py-3 font-mono text-[11px]">{f.rsbsa}</td>
+                <td className="px-4 py-3 text-xs font-medium">{f.name}</td>
+                <td className="px-4 py-3 text-xs">{f.sex}</td>
+                <td className="px-4 py-3 text-xs hidden md:table-cell">{f.barangay}</td>
+                <td className="px-4 py-3 font-mono text-xs">{f.parcels}</td>
+                <td className="px-4 py-3 font-mono text-xs hidden lg:table-cell">{f.totalArea.toFixed(2)}</td>
+                <td className="px-4 py-3 text-xs hidden lg:table-cell">{f.primaryCrop}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${FARMER_BADGE[f.status]}`}>
+                    {f.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  );
+}
+
+// ============================================================
+// Reports view
+// ============================================================
+function ReportsView() {
+  const totalParcels = JOBS.reduce((s, j) => s + j.parcels, 0);
+  const totalTagged = JOBS.reduce((s, j) => s + j.tagged, 0);
+  const overall = Math.round((totalTagged / totalParcels) * 100);
+
+  const cropMix = [
+    { crop: "Rice (Irrigated)", area: 312.4, share: 48 },
+    { crop: "Rice (Rainfed)",   area: 118.2, share: 18 },
+    { crop: "Corn",             area:  92.6, share: 14 },
+    { crop: "Sugarcane",        area:  72.0, share: 11 },
+    { crop: "Vegetables",       area:  38.1, share:  6 },
+    { crop: "Mango",            area:  20.7, share:  3 },
+  ];
+
+  const exceptions = [
+    { reason: "Boundary mismatch",   count: 14 },
+    { reason: "Farmer not on RSBSA", count:  9 },
+    { reason: "Duplicate tag",       count:  6 },
+    { reason: "GPS outside parcel",  count:  4 },
+    { reason: "Photo missing",       count:  3 },
+  ];
+
+  return (
+    <main className="flex flex-1 flex-col overflow-auto">
+      <div className="border-b border-border bg-card px-5 py-4">
+        <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Operations</div>
+        <h1 className="mt-1 text-lg font-semibold tracking-tight">Reports</h1>
+        <p className="text-xs text-muted-foreground">Region III tagging performance · June 2026 cycle.</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-px border-b border-border bg-border md:grid-cols-4">
+        <Stat label="Jobs Active" value={String(JOBS.filter(j => j.status !== "completed").length)} />
+        <Stat label="Parcels in Scope" value={String(totalParcels)} />
+        <Stat label="Tagging Coverage" value={`${overall}%`} />
+        <Stat label="Open Exceptions" value={String(exceptions.reduce((s, e) => s + e.count, 0))} />
+      </div>
+
+      <div className="grid gap-5 p-5 lg:grid-cols-2">
+        <section className="rounded-lg border border-border bg-card p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Job Progress</h2>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">By order</span>
+          </div>
+          <ul className="space-y-3">
+            {JOBS.map(j => {
+              const pct = Math.round((j.tagged / j.parcels) * 100);
+              return (
+                <li key={j.id}>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium">{j.title}</span>
+                    <span className="font-mono text-muted-foreground">{j.tagged}/{j.parcels} · {pct}%</span>
+                  </div>
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className={`h-full ${j.status === "overdue" ? "bg-red-500" : j.status === "completed" ? "bg-emerald-500" : "bg-primary"}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Crop Mix</h2>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Hectares tagged</span>
+          </div>
+          <ul className="space-y-2.5">
+            {cropMix.map(c => (
+              <li key={c.crop}>
+                <div className="flex items-center justify-between text-xs">
+                  <span>{c.crop}</span>
+                  <span className="font-mono text-muted-foreground">{c.area.toFixed(1)} ha · {c.share}%</span>
+                </div>
+                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                  <div className="h-full bg-emerald-500" style={{ width: `${c.share}%` }} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Exceptions Breakdown</h2>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">For validator</span>
+          </div>
+          <ul className="divide-y divide-border">
+            {exceptions.map(e => (
+              <li key={e.reason} className="flex items-center justify-between py-2 text-xs">
+                <span className="flex items-center gap-2">
+                  <AlertTriangle className="size-3.5 text-amber-600" />
+                  {e.reason}
+                </span>
+                <span className="font-mono font-semibold">{e.count}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Surveyor Throughput</h2>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Last 7 days</span>
+          </div>
+          <ul className="space-y-2.5">
+            {JOBS.map(j => (
+              <li key={j.id} className="flex items-center gap-3">
+                <div className={`grid size-7 place-items-center rounded-full text-[10px] font-semibold ${j.surveyor.tone}`}>
+                  {j.surveyor.initials}
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs font-medium">{j.surveyor.name}</div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {j.tagged} parcels · {(j.tagged / 7).toFixed(1)}/day avg
+                  </div>
+                </div>
+                <span className="font-mono text-xs text-muted-foreground">{j.code}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </main>
   );
 }
